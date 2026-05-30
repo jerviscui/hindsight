@@ -2,6 +2,20 @@
 
 Long-term memory for [OpenAI Codex CLI](https://github.com/openai/codex) — remembers your projects, preferences, and past sessions across every conversation.
 
+## Windows
+
+### Installation
+
+```
+hindsight-docs\static\get-codex.ps1
+```
+
+### 强制上传
+
+```
+python (Join-Path $HOME '.hindsight\codex\scripts\retain_force.py')
+```
+
 ## How it works
 
 Three Codex hooks keep memory in sync automatically:
@@ -27,6 +41,7 @@ curl -fsSL https://hindsight.vectorize.io/get-codex | bash
 ```
 
 The installer:
+
 1. Downloads scripts to `~/.hindsight/codex/scripts/`
 2. Writes `~/.codex/hooks.json` with absolute paths to the scripts
 3. Adds `codex_hooks = true` to `~/.codex/config.toml`

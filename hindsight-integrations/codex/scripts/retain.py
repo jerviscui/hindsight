@@ -37,17 +37,18 @@ from lib.state import increment_turn_count
 
 
 def main():
-    config = load_config()
-
-    if not config.get("autoRetain"):
-        debug_log(config, "Auto-retain disabled, exiting")
-        return
-
     # Read hook input from stdin
     try:
         hook_input = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError):
         print("[Hindsight] Failed to read hook input", file=sys.stderr)
+        return
+
+    cwd = hook_input.get("cwd", "")
+    config = load_config(cwd=cwd)
+
+    if not config.get("autoRetain"):
+        debug_log(config, "Auto-retain disabled, exiting")
         return
 
     debug_log(config, f"Stop hook input keys: {list(hook_input.keys())}")

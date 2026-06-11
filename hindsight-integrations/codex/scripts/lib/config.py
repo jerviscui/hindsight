@@ -106,7 +106,39 @@ def _load_settings_file(path: str, config: dict) -> None:
         debug_log(config, f"Failed to load {path}: {e}")
 
 
-def load_config() -> dict:
+def _load_dotenv(cwd) -> dict:
+    """Parse workspace-specific .env file and return key-value pairs."""
+    dotenv_vars = {}
+    if not cwd or not os.path.isdir(cwd):
+        return dotenv_vars
+
+    dotenv_path = os.path.join(cwd, ".env")
+    if os.path.exists(dotenv_path):
+        try:
+            with open(dotenv_path, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if line.startswith("export "):
+                        line = line[7:].strip()
+                    if "=" not in line:
+                        continue
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip()
+                    if len(v) >= 2 and (
+                        (v.startswith('"') and v.endswith('"')) or
+                        (v.startswith("'") and v.endswith("'"))
+                    ):
+                        v = v[1:-1]
+                    dotenv_vars[k] = v
+        except Exception:
+            pass
+    return dotenv_vars
+
+
+def load_config(cwd=None) -> dict:
     """Load plugin configuration from settings.json + env overrides.
 
     Loading order (later entries win):
@@ -128,9 +160,14 @@ def load_config() -> dict:
     user_config_path = os.path.join(os.path.expanduser("~"), ".hindsight", "codex.json")
     _load_settings_file(user_config_path, config)
 
+    # Load workspace-specific .env variables
+    dotenv_vars = _load_dotenv(cwd)
+
     # Apply environment variable overrides
     for env_name, (key, typ) in ENV_OVERRIDES.items():
-        val = os.environ.get(env_name)
+        val = dotenv_vars.get(env_name)
+        if val is None:
+            val = os.environ.get(env_name)
         if val is not None:
             cast_val = _cast_env(val, typ)
             if cast_val is not None:

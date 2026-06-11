@@ -18,17 +18,18 @@ from lib.daemon import get_api_url, prestart_daemon_background
 
 
 def main():
-    config = load_config()
-
-    if not config.get("autoRecall") and not config.get("autoRetain"):
-        debug_log(config, "Both autoRecall and autoRetain disabled, skipping session start")
-        return
-
     # Consume stdin
     try:
         hook_input = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError):
         hook_input = {}
+
+    cwd = hook_input.get("cwd", "")
+    config = load_config(cwd=cwd)
+
+    if not config.get("autoRecall") and not config.get("autoRetain"):
+        debug_log(config, "Both autoRecall and autoRetain disabled, skipping session start")
+        return
 
     debug_log(config, f"SessionStart hook, session: {hook_input.get('session_id', 'unknown')}")
 

@@ -57,8 +57,6 @@ def find_transcript(session_id: str):
     return None, None
 
 def main():
-    config = load_config()
-
     # Create hook input
     try:
         sessions_root = Path.home() / ".codex" / "sessions"
@@ -98,6 +96,7 @@ def main():
         print("[Hindsight] Failed to read hook input", file=sys.stderr)
         return
 
+    config = load_config(cwd=hook_input.get("cwd"))
     debug_log(config, f"Stop hook input keys: {list(hook_input.keys())}")
 
     session_id = hook_input.get("session_id", "unknown")
